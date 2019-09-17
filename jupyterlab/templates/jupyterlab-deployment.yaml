@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jupyterlab.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ tpl .Values.labels.app . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ tpl .Values.labels.app . }}
+  template:
+    metadata:
+      labels:
+        app: {{ tpl .Values.labels.app . }}
+    spec:
+      containers:
+      - name: {{ include "jupyterlab.name" . }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        pullPolicy: Always
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        - name: {{ .Values.persistence.volumeName }}
+          mountPath: {{ .Values.persistence.mountPath}}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        {{- with .Values.healthChecks }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      volumes:
+      - name: {{ .Values.persistence.volumeName }}
+        persistentVolumeClaim:
+          claimName: {{ tpl .Values.persistence.claimName . }}
+      {{ if .Values.nodeSelector }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{ end }}
