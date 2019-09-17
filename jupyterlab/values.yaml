@@ -4,35 +4,33 @@
 
 replicaCount: 1
 
-namespace: dinos
-
 image:
   repository: dinossimpson/aai-jupyterlab-gpu-py3.7
   tag: 0.5
-  pullPolicy: Always
 
 nameOverride: ""
 fullnameOverride: ""
 
 labels:
-  app: jupyterlab-{{ .Release.Time.Seconds }}
+  app: jupyterlab
 
 service:
-  type: NodePort
+  type: LoadBalancer
   name: jupyterlab-svc
-  port: 8888
+  port: 80
+  targetPort: 8888
   protocol: TCP
-  annotations:
-    getambassador.io/config: |
-      ---
-      apiVersion: ambassador/v1
-      kind: Mapping
-      name: jupyterlab-ambassador
-      prefix: /jupyterlab
-      service: jupyterlab-svc:8888
+  # annotations:
+  #   getambassador.io/config: |
+  #     ---
+  #     apiVersion: ambassador/v1
+  #     kind: Mapping
+  #     name: jupyterlab-ambassador
+  #     prefix: /jupyterlab
+  #     service: jupyterlab-svc:8888
 
 persistence:
-  claimName: jupyterlab-pvc-{{ .Release.Time.Seconds }}
+  claimName: jupyterlab-pvc
   volumeName: jupyterlab-volume
   # careful, if the directory exists in the image, it will get overwritten with whatever is in the pvc
   mountPath: /persistent
@@ -66,9 +64,7 @@ healthChecks:
     tcpSocket:
       port: 8888
 
-nodeSelector:
-  #gpu-accelerated: "true"
-  cpu: "fast"
+nodeSelector: {}
 
 tolerations: []
 

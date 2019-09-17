@@ -3,7 +3,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "jupyterlab.fullname" . }}
-  namespace: {{ .Values.namespace }}
   labels:
     app: {{ tpl .Values.labels.app . }}
 spec:
@@ -19,7 +18,7 @@ spec:
       containers:
       - name: {{ include "jupyterlab.name" . }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        pullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
         volumeMounts:
